@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <title>Pointer</title>
+  </head>
+  <body>
+    <div
+      id="ball"
+      style="position: absolute; top: 50%; left: 50%; background: red; display: block; width: 1vh; height: 1vh; padding-left: 0%; padding-top: 0%; transform: translate(-50%, -50%)"
+    ></div>
+    <div id="outputx"></div>
+    <br />
+    <div id="outputy"></div>
+    <br />
+    <div id="outputz"></div>
+
+    <script>
+      let password;
+      var socket = io.connect();
+
+      let calibrated = false;
+
+      let throttle = false;
+      let throttletickrate = 120;
+
+      let start = { alpha: 0, beta: 0 };
+      let end = { alpha: 0, beta: 0 };
+      let cpoint = { alpha: 0, beta: 0 };
+
+      let highest = 0;
+      let lowest = 0;
+
+      let xChange = 0;
+      let yChange = 0;
+
+      if (window.DeviceMotionEvent) {
+        //password = prompt("Password :)")
+        password = "19234";
+      } else {
+        alert("Sorry, your browser doesn't support Device Motion");
+        document.write = "";
+        document.getElementsByTagName("body")[0].innerHTML = "";
+      }
+
+      window.addEventListener("devicemotion", handleMotionEvent, true);
+
+      function handleMotionEvent(event) {
+        if (!throttle) {
+          var x = event.acceleration.x;
+          var y = event.acceleration.y;
+          var z = event.accelerationIncludingGravity.z;
+
+          if (Math.abs(x) >= 0) {
+            xChange = xChange + x;
+            document.getElementById("ball").style.paddingLeft = xChange + "%";
+            document.getElementById("outputx").innerHTML = document.getElementById("ball").style.paddingLeft     
+          }
+          if (Math.abs(y) >= 0) {
+            yChange = yChange + y;
+            document.getElementById("ball").style.paddingTop = xChange + "%";
+            document.getElementById("outputy").innerHTML = document.getElementById("ball").style.paddingTop    
+          }
+          //document.getElementById("ball").style.left = x + "%";
+          //document.getElementById("ball").style.left = parseInt(document.getElementById("ball").style.left) + xChange*100/1000 + "%";
+          //document.getElementById("outputx").innerHTML += xChange + "<br>";
+          throttle = true;
+
+          setTimeout(function() {
+            throttle = false;
+          }, 1000 / throttletickrate);
+        }
+      }
+    </script>
+  </body>
+</html>

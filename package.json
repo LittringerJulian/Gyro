@@ -1,0 +1,29 @@
+{
+  "name": "gyro",
+  "version": "1.0.0",
+  "description": "",
+  "main": "accpointer.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "local-ipv4-address": "^0.0.2",
+    "robot": "^0.3.0",
+    "robotjs": "^0.6.0",
+    "socket.io": "^2.3.0",
+    "windows-build-tools": "^5.2.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LittringerJulian/Gyro.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LittringerJulian/Gyro/issues"
+  },
+  "homepage": "https://github.com/LittringerJulian/Gyro#readme"
+}
