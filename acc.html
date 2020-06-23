@@ -6,6 +6,13 @@
     <script src="/socket.io/socket.io.js"></script>
     <title>Pointer</title>
   </head>
+  <style>
+div{
+  font-size: 2vh;
+  text-align: right;
+}
+
+  </style>
   <body>
     <div
       id="ball"
@@ -24,7 +31,7 @@
       let calibrated = false;
 
       let throttle = false;
-      let throttletickrate = 120;
+      let throttletickrate = 400;
 
       let start = { alpha: 0, beta: 0 };
       let end = { alpha: 0, beta: 0 };
@@ -53,15 +60,15 @@
           var y = event.acceleration.y;
           var z = event.accelerationIncludingGravity.z;
 
-          if (Math.abs(x) >= 0) {
-            xChange = xChange + x;
+          if (true) {
+            xChange += x;
             document.getElementById("ball").style.paddingLeft = xChange + "%";
-            document.getElementById("outputx").innerHTML = document.getElementById("ball").style.paddingLeft     
+            document.getElementById("outputx").innerHTML = x * 100;
           }
-          if (Math.abs(y) >= 0) {
-            yChange = yChange + y;
+          if (true) {
+            yChange += y;
             document.getElementById("ball").style.paddingTop = xChange + "%";
-            document.getElementById("outputy").innerHTML = document.getElementById("ball").style.paddingTop    
+            document.getElementById("outputy").innerHTML = y * 100;
           }
           //document.getElementById("ball").style.left = x + "%";
           //document.getElementById("ball").style.left = parseInt(document.getElementById("ball").style.left) + xChange*100/1000 + "%";
