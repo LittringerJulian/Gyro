@@ -1,85 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <title>Pointer</title>
-  </head>
-  <style>
-div{
-  font-size: 2vh;
-  text-align: right;
-}
 
-  </style>
-  <body>
-    <div
-      id="ball"
-      style="position: absolute; top: 50%; left: 50%; background: red; display: block; width: 1vh; height: 1vh; padding-left: 0%; padding-top: 0%; transform: translate(-50%, -50%)"
-    ></div>
-    <div id="outputx"></div>
-    <br />
-    <div id="outputy"></div>
-    <br />
-    <div id="outputz"></div>
+<head>
+  <meta charset="UTF-8" />
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <title>Pointer</title>
+</head>
+<style>
+  div {
+    font-size: 2vh;
+    text-align: left;
+  }
 
-    <script>
-      let password;
-      var socket = io.connect();
+  #ball {
+    height: 2vh;
+    width: 2vh;
+    border-radius: 100%;
+    top: 50%;
+    left: 50%;
+    position: absolute;
+    display: block;
+    background: red;
+  }
+</style>
 
-      let calibrated = false;
+<body>
+  <div id="ball"></div>
+  <div id="outputx"></div>
+  <br />
+  <div id="outputy"></div>
+  <br />
+  <div id="outputz"></div>
 
-      let throttle = false;
-      let throttletickrate = 400;
+  <script>
+    let password;
+    var socket = io.connect();
 
-      let start = { alpha: 0, beta: 0 };
-      let end = { alpha: 0, beta: 0 };
-      let cpoint = { alpha: 0, beta: 0 };
+    let throttle = false;
+    let throttletickrate = 60;
 
-      let highest = 0;
-      let lowest = 0;
+    let xChange = 0;
+    let yChange = 0;
 
-      let xChange = 0;
-      let yChange = 0;
+    let deviation = 0;
 
-      if (window.DeviceMotionEvent) {
-        //password = prompt("Password :)")
-        password = "19234";
-      } else {
-        alert("Sorry, your browser doesn't support Device Motion");
-        document.write = "";
-        document.getElementsByTagName("body")[0].innerHTML = "";
+    let accX = 0;
+    let velX = 0;
+    let distX = 0;
+
+    let totalVelX = 0;
+
+    let date1 = new Date();
+    let date2 = new Date();
+
+    if (window.DeviceMotionEvent) {
+      //password = prompt("Password :)")
+      password = "19234";
+    } else {
+      alert("Sorry, your browser doesn't support Device Motion");
+      document.write = "";
+      document.getElementsByTagName("body")[0].innerHTML = "";
+    }
+
+    window.addEventListener("devicemotion", handleMotionEvent, true);
+
+    function handleMotionEvent(event) {
+      accX = Math.floor(event.acceleration.x * 10000) / 10000;
+      //var yAcc = Math.floor(event.acceleration.y * 10000) / 10000;
+      //var z = event.accelerationIncludingGravity.z;
+
+      // now
+      // used to measure the time that passes between single event calls
+      // required to calculate velocity and distance
+      date2 = new Date();
+
+      //if (Math.abs(accX) >= deviation)
+
+      if (Math.abs(distX + velToDist(accToVel(accX, date1, date2), date1, date2)) > Math.abs(distX)) {
+
+      }
+      else {
+
       }
 
-      window.addEventListener("devicemotion", handleMotionEvent, true);
+      velX = accToVel(accX, date1, date2)
+      distX = velToDist(velX, date1, date2)
 
-      function handleMotionEvent(event) {
-        if (!throttle) {
-          var x = event.acceleration.x;
-          var y = event.acceleration.y;
-          var z = event.accelerationIncludingGravity.z;
+      totalVelX += velX
 
-          if (true) {
-            xChange += x;
-            document.getElementById("ball").style.paddingLeft = xChange + "%";
-            document.getElementById("outputx").innerHTML = x * 100;
-          }
-          if (true) {
-            yChange += y;
-            document.getElementById("ball").style.paddingTop = xChange + "%";
-            document.getElementById("outputy").innerHTML = y * 100;
-          }
-          //document.getElementById("ball").style.left = x + "%";
-          //document.getElementById("ball").style.left = parseInt(document.getElementById("ball").style.left) + xChange*100/1000 + "%";
-          //document.getElementById("outputx").innerHTML += xChange + "<br>";
-          throttle = true;
+      // set time of last measurement to current time
+      date1 = date2;
 
-          setTimeout(function() {
-            throttle = false;
-          }, 1000 / throttletickrate);
-        }
+      if (!throttle) {
+        // x
+        //document.getElementById("outputx").innerHTML = x + "<br>diff: " + newX + "<br>xChange: " + xChange + "<br>distance: " + (parseInt(document.getElementById("ball").offsetLeft) + xChange);
+        document.getElementById("outputx").innerHTML = distX + "<br>" + totalVelX
+        document.getElementById("ball").style.left = parseInt(document.getElementById("ball").offsetLeft) + (totalVelX * 0.1) + "px"
+
+        // y
+        //document.getElementById("outputy").innerHTML = y + "<br>ytotal: " + yChange;
+
+
+        throttle = true;
+        setTimeout(function () {
+          throttle = false;
+        }, 1000 / throttletickrate);
       }
-    </script>
-  </body>
+    }
+
+    function velToDist(vel, d1, d2) {
+      return vel * (d2 - d1)
+    }
+
+    function accToVel(acc, d1, d2) {
+      return acc * (d2 - d1)
+    }
+  </script>
+</body>
+
 </html>

@@ -6,10 +6,10 @@ const pass = "19234"
 var localip
 var port = 3000
 
-//var mousemove = require("./mousemove.js")
 var Gyropointer = require("./gyropointer.js")
-var gyro = new Gyropointer()
 var robot = require("robotjs")
+
+var gyro = new Gyropointer()
 
 localIpV4Address().then(function (ipAddress) {
     localip = ipAddress
