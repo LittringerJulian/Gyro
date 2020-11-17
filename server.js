@@ -2,7 +2,6 @@ const app = require('express')()
 const server = require('http').createServer(app)
 const io = require('socket.io').listen(server)
 const localIpV4Address = require("local-ipv4-address")
-const pass = "19234"
 var localip
 var port = 3000
 
@@ -11,7 +10,7 @@ var robot = require("robotjs")
 
 var gyro = new Gyropointer()
 
-localIpV4Address().then(function (ipAddress) {
+localIpV4Address().then(function(ipAddress) {
     localip = ipAddress
     console.log(localip)
 });
@@ -19,35 +18,18 @@ localIpV4Address().then(function (ipAddress) {
 server.listen(port, () => console.log('app listening on port 3000!'))
 
 
-io.sockets.on('connection', function (socket) {
+io.sockets.on('connection', function(socket) {
+    console.log("connected")
 
     //io.emit('getip', "http://" + localip + ":" + port + "/pointer")
 
-
-    socket.on('gyro.recalibrate', function (start, end, password) {
-        if (password == pass) {
-            gyro.updateDisplaySize(start, end, robot.getScreenSize().width, robot.getScreenSize().height)
-        }
+    socket.on('gyro.moveMouse', function(gyroval) {
+        gyro.moveMouse(gyroval)
     })
+});
 
-    socket.on('gyro.movepointer', function (cpoint, password) {
-        if (password == pass) {
-            gyro.updatePointer(cpoint)
-        }
-    })
-
-    socket.on('gyro.mousebuttontoggle', function (mousestatus, password) {
-        if (password == pass) {
-            if (!mousestatus) {
-                robot.mouseToggle("down")
-            }
-            else {
-                robot.mouseToggle("up")
-            }
-        }
-    })
-
-    console.log("connected")
+app.get('/gyroold', (req, res) => {
+    res.sendFile(__dirname + '/gyroold.html')
 });
 
 app.get('/gyro', (req, res) => {

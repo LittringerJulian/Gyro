@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <title>Pointer</title>
+</head>
+<style>
+    * {
+        font-family: 'Arial';
+        font-size: 1.5vh;
+    }
+
+    #calibrateBtn {
+        position: absolute;
+        width: 10vh;
+        height: 10vh;
+        line-height: 10vh;
+        text-align: center;
+        left: 50%;
+        top: 70%;
+        transform: translateX(-50%);
+        color: white;
+        font-weight: 700;
+        user-select: none;
+        background: crimson;
+        border-radius: 100%;
+        font-size: 1.7vh;
+    }
+
+    #calibrateBtn:active {
+        background: rgb(138, 11, 36);
+    }
+
+    #staticBtn {
+        position: absolute;
+        width: 10vh;
+        height: 10vh;
+        line-height: 10vh;
+        text-align: center;
+        left: 50%;
+        top: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-weight: 700;
+        user-select: none;
+        background: cornflowerblue;
+        border-radius: 100%;
+        font-size: 1.7vh;
+    }
+
+    #staticBtn:active {
+        background: rgb(41, 94, 190);
+    }
+
+    div {
+        user-select: none;
+    }
+
+    #toggleBtn {
+        position: absolute;
+        width: 10vh;
+        height: 10vh;
+        line-height: 10vh;
+        text-align: center;
+        left: 50%;
+        top: 30%;
+        transform: translateX(-50%);
+        color: white;
+        font-weight: 700;
+        user-select: none;
+        background: lightgreen;
+        border-radius: 100%;
+        font-size: 1.7vh;
+    }
+
+    #toggleBtn:active {
+        background: rgb(98, 214, 98);
+    }
+</style>
+
+<body>
+    <div id="output"></div>
+    <br>
+    <div id="points"></div>
+    <div id="staticBtn" onclick="toggleStatic()">togglestatic</div>
+    <div id="toggleBtn" ontouchstart="toggleMouseButton()" ontouchend="toggleMouseButton()">toggleMouseButton</div>
+    <div id="calibrateBtn" ontouchstart="setStart()" ontouchend="setEnd()">calibrate</div>
+    <script>
+
+        let password
+        var socket = io.connect();
+
+        let calibrated = false
+        let pointerIsStatic = false
+        let mouseIsClicked = false
+
+        let throttle = false
+        let throttletickrate = 32
+
+        let start = { alpha: 0, beta: 0 }
+        let end = { alpha: 0, beta: 0 }
+        let cpoint = { alpha: 0, beta: 0 }
+
+
+        if (window.DeviceOrientationEvent) {
+            //password = prompt("Password :)")
+            password = "19234"
+            
+        } else {
+            alert("Sorry, your browser doesn't support Device Orientation")
+            document.write = ""
+            document.getElementsByTagName("body")[0].innerHTML = ""
+        }
+
+        window.addEventListener("deviceorientation", handleOrientation, true)
+
+        function handleOrientation(event) {
+            if (!pointerIsStatic) {
+                if (!throttle) {
+                    var absolute = event.absolute
+                    var alpha = event.alpha
+                    var beta = event.beta
+                    var gamma = event.gamma
+
+                    console.log(absolute + " / " + alpha + " / " + beta + " / " + gamma)
+                    document.getElementById("output").innerHTML = "a: " + absolute + " <br>a: " + alpha + " <br>b: " + beta + " <br>g: " + gamma
+
+                    cpoint.alpha = Math.floor(alpha * 100) / 100
+                    cpoint.beta = Math.floor(beta * 100) / 100
+
+                    if (calibrated) {
+                        movePointer()
+                    }
+                    throttle = true
+
+                    setTimeout(function () {
+                        throttle = false
+                    }, 1000 / throttletickrate)
+                }
+            }
+        }
+
+        function setStart() {
+            start.alpha = cpoint.alpha
+            start.beta = cpoint.beta
+
+            $(' #staticBtn ').css('opacity', 0.2)
+            $(' #staticBtn ').css('pointerEvents', 'none')
+
+            $(' #toggleBtn ').css('opacity', 0.2)
+            $(' #toggleBtn ').css('pointerEvents', 'none')
+        }
+
+        function setEnd() {
+            end.alpha = cpoint.alpha
+            end.beta = cpoint.beta
+
+            document.getElementById("points").innerHTML = "start: " + Math.floor(start.alpha) + " / " + Math.floor(start.beta) + "<br>end: " + Math.floor(end.alpha) + " / " + Math.floor(end.beta)
+
+            calibrated = true
+            recalibrate()
+
+            $(' #staticBtn ').css('opacity', 1)
+            $(' #staticBtn ').css('pointerEvents', 'auto')
+
+            $(' #toggleBtn ').css('opacity', 1)
+            $(' #toggleBtn ').css('pointerEvents', 'auto')
+        }
+
+        function recalibrate() {
+            socket.emit('gyro.recalibrate', start, end, password)
+        }
+
+        function movePointer() {
+            socket.emit('gyro.movepointer', cpoint, password)
+        }
+
+
+        function toggleMouseButton() {
+
+            if (mouseIsClicked) {
+                $(' #calibrateBtn ').css('opacity', 1)
+                $(' #calibrateBtn ').css('pointerEvents', 'auto')
+
+                $(' #staticBtn ').css('opacity', 1)
+                $(' #staticBtn ').css('pointerEvents', 'auto')
+            }
+            else {
+                $(' #calibrateBtn ').css('opacity', 0.2)
+                $(' #calibrateBtn ').css('pointerEvents', 'none')
+
+                $(' #staticBtn ').css('opacity', 0.2)
+                $(' #staticBtn ').css('pointerEvents', 'none')
+            }
+
+            socket.emit('gyro.mousebuttontoggle', mouseIsClicked, password)
+
+            mouseIsClicked = !mouseIsClicked
+        }
+
+        function toggleStatic() {
+            pointerIsStatic = !pointerIsStatic
+
+            if (pointerIsStatic) {
+                $(' #calibrateBtn ').css('opacity', 0.2)
+                $(' #calibrateBtn ').css('pointerEvents', 'none')
+
+                $(' #toggleBtn ').css('opacity', 0.2)
+                $(' #toggleBtn ').css('pointerEvents', 'none')
+            }
+            else {
+                $(' #calibrateBtn ').css('opacity', 1)
+                $(' #calibrateBtn ').css('pointerEvents', 'auto')
+
+                $(' #toggleBtn ').css('opacity', 1)
+                $(' #toggleBtn ').css('pointerEvents', 'auto')
+            }
+
+        }
+    </script>
+</body>
+
+</html>
